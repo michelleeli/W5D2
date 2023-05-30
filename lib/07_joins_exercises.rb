@@ -40,6 +40,15 @@ end
 def ford_films
   # List the films in which 'Harrison Ford' has appeared.
   execute(<<-SQL)
+  SELECT title
+  FROM movies
+  LEFT JOIN castings
+    ON id = movie_id
+  WHERE actor_id = (
+            SELECT id
+            FROM actors
+            WHERE name = 'Harrison Ford'
+            );
   SQL
 end
 
@@ -48,12 +57,28 @@ def ford_supporting_films
   # role. [Note: The ord field of casting gives the position of the actor. If
   # ord=1 then this actor is in the starring role.]
   execute(<<-SQL)
+  SELECT title
+  FROM movies
+  LEFT JOIN castings
+    ON id = movie_id
+  WHERE actor_id = (
+            SELECT id
+            FROM actors
+            WHERE name = 'Harrison Ford'
+            ) AND ord NOT IN (1);
   SQL
 end
 
 def films_and_stars_from_sixty_two
   # List the title and leading star of every 1962 film.
   execute(<<-SQL)
+    SELECT m.title, a.name
+    FROM castings c
+    JOIN movies m
+      ON m.id = c.movie_id
+      JOIN actors a
+      ON a.id = c.actor_id
+    WHERE m.yr = 1962 AND c.ord = 1;
   SQL
 end
 
@@ -61,6 +86,16 @@ def travoltas_busiest_years
   # Which were the busiest years for 'John Travolta'? Show the year and the
   # number of movies he made for any year in which he made at least 2 movies.
   execute(<<-SQL)
+
+  SELECT m.yr, COUNT(m.title)
+  FROM castings c
+  JOIN movies m
+    ON m.id = c.movie_id
+    JOIN actors a
+    ON a.id = c.actor_id
+  WHERE a.name = 'John Travolta'
+  GROUP BY m.yr 
+  HAVING COUNT(m.title) >= 2;
   SQL
 end
 
@@ -68,6 +103,13 @@ def andrews_films_and_leads_joins
   # List the film title and the leading actor for all of the films 'Julie
   # Andrews' played in.
   execute(<<-SQL)
+  SELECT m.title, a.name
+  FROM castings c
+  JOIN movies m
+    ON m.id = c.movie_id
+    JOIN actors a
+    ON a.id = c.actor_id
+  WHERE a.name = 'Julie Andrews' AND c.ord = 1;
   SQL
 end
 
